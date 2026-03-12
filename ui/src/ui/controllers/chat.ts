@@ -46,7 +46,7 @@ export type ChatState = {
 export type ChatEventPayload = {
   runId: string;
   sessionKey: string;
-  state: "delta" | "final" | "aborted" | "error";
+  state: "delta" | "final" | "aborted" | "error" | "refresh";
   message?: unknown;
   errorMessage?: string;
 };
@@ -264,6 +264,12 @@ export function handleChatEvent(state: ChatState, payload?: ChatEventPayload) {
     return null;
   }
   if (payload.sessionKey !== state.sessionKey) {
+    return null;
+  }
+
+  // Handle refresh event: when agent starts running, reload chat history to show user message immediately
+  if (payload.state === "refresh") {
+    void loadChatHistory(state);
     return null;
   }
 

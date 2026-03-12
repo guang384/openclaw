@@ -590,6 +590,15 @@ export function createAgentEventHandler({
     const lifecyclePhase =
       evt.stream === "lifecycle" && typeof evt.data?.phase === "string" ? evt.data.phase : null;
 
+    // When agent starts running, broadcast a refresh event so Dashboard can load the user message immediately
+    if (isControlUiVisible && sessionKey && lifecyclePhase === "start") {
+      nodeSendToSession(sessionKey, "chat", {
+        runId: clientRunId,
+        sessionKey,
+        state: "refresh" as const,
+      });
+    }
+
     if (isControlUiVisible && sessionKey) {
       // Send tool events to node/channel subscribers only when verbose is enabled;
       // WS clients already received the event above via broadcastToConnIds.
